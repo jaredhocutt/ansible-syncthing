@@ -1,0 +1,30 @@
+---
+
+- name: Install syncthing
+  dnf:
+    name: syncthing
+    state: present
+  become: yes
+
+- name: Create syncthing service for {{ ansible_user }}
+  copy:
+    src: syncthing@.service
+    dest: /etc/systemd/system/syncthing@{{ ansible_user }}.service
+    owner: root
+    group: root
+    mode: 0644
+  register: syncthing_service
+  become: yes
+
+- name: Reload systemd
+  systemd:
+    daemon_reload: yes
+  when: syncthing_service.changed
+  become: yes
+
+- name: Start and enable syncthing
+  systemd:
+    name: syncthing@{{ ansible_user }}.service
+    state: started
+    enabled: yes
+  become: yes
